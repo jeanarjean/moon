@@ -164,7 +164,7 @@
           :for={{id, email} <- @streams.emails}
           id={id}
           class={[
-            "flex items-center gap-3 px-4 py-3 border-b border-base-200/60 hover:bg-base-200/40 transition-colors duration-100 cursor-pointer group",
+            "flex items-center gap-3 px-4 py-3 border-b border-base-200/60 hover:bg-base-200/40 transition-colors duration-100 group",
             if(!email.read, do: "bg-primary/[0.03]")
           ]}
         >
@@ -193,63 +193,69 @@
             </button>
           </div>
 
-          <%!-- From --%>
-          <div class="w-44 shrink-0 flex items-center gap-1.5 min-w-0">
-            <span class={["truncate text-sm", if(!email.read, do: "font-semibold")]}>
-              {email.from}
-            </span>
-            <span
-              :if={email.thread_count > 1}
-              class="badge badge-xs bg-base-300 text-base-content/70 font-medium"
-            >
-              {email.thread_count}
-            </span>
-          </div>
+          <%!-- Clickable content area — navigates to email detail --%>
+          <.link
+            navigate={~p"/inbox/#{email.id}"}
+            class="flex-1 flex items-center gap-3 min-w-0 cursor-pointer"
+          >
+            <%!-- From --%>
+            <div class="w-44 shrink-0 flex items-center gap-1.5 min-w-0">
+              <span class={["truncate text-sm", if(!email.read, do: "font-semibold")]}>
+                {email.from}
+              </span>
+              <span
+                :if={email.thread_count > 1}
+                class="badge badge-xs bg-base-300 text-base-content/70 font-medium"
+              >
+                {email.thread_count}
+              </span>
+            </div>
 
-          <%!-- Status --%>
-          <div class="w-36 shrink-0">
-            <span class={[
-              "inline-flex text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap",
-              status_classes(email.status)
-            ]}>
-              {status_label(email.status)}
-            </span>
-          </div>
+            <%!-- Status --%>
+            <div class="w-36 shrink-0">
+              <span class={[
+                "inline-flex text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap",
+                status_classes(email.status)
+              ]}>
+                {status_label(email.status)}
+              </span>
+            </div>
 
-          <%!-- Subject + Body --%>
-          <div class="flex-1 min-w-0 flex items-center gap-1.5">
-            <span :if={email.priority == :high} class="text-error shrink-0">
-              <.icon name="hero-exclamation-circle-solid" class="size-4" />
-            </span>
-            <.icon
-              :if={email.has_attachment}
-              name="hero-paper-clip"
-              class="size-3.5 text-base-content/40 shrink-0"
-            />
-            <p class="truncate text-sm">
-              <span class={[if(!email.read, do: "font-semibold")]}>{email.subject}</span>
-              <span class="text-base-content/40 mx-1">&bull;</span>
-              <span class="text-base-content/50">{email.body_preview}</span>
-            </p>
-          </div>
+            <%!-- Subject + Body --%>
+            <div class="flex-1 min-w-0 flex items-center gap-1.5">
+              <span :if={email.priority == :high} class="text-error shrink-0">
+                <.icon name="hero-exclamation-circle-solid" class="size-4" />
+              </span>
+              <.icon
+                :if={email.has_attachment}
+                name="hero-paper-clip"
+                class="size-3.5 text-base-content/40 shrink-0"
+              />
+              <p class="truncate text-sm">
+                <span class={[if(!email.read, do: "font-semibold")]}>{email.subject}</span>
+                <span class="text-base-content/40 mx-1">&bull;</span>
+                <span class="text-base-content/50">{email.body_preview}</span>
+              </p>
+            </div>
 
-          <%!-- Tags --%>
-          <div class="w-44 shrink-0 hidden xl:flex items-center gap-1 flex-wrap">
-            <span
-              :for={tag <- email.tags}
-              class={[
-                "inline-flex text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
-                tag_classes(tag)
-              ]}
-            >
-              {tag_label(tag)}
-            </span>
-          </div>
+            <%!-- Tags --%>
+            <div class="w-44 shrink-0 hidden xl:flex items-center gap-1 flex-wrap">
+              <span
+                :for={tag <- email.tags}
+                class={[
+                  "inline-flex text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
+                  tag_classes(tag)
+                ]}
+              >
+                {tag_label(tag)}
+              </span>
+            </div>
 
-          <%!-- Date --%>
-          <div class="w-14 shrink-0 text-right text-sm text-base-content/50">
-            {format_date(email.date)}
-          </div>
+            <%!-- Date --%>
+            <div class="w-14 shrink-0 text-right text-sm text-base-content/50">
+              {format_date(email.date)}
+            </div>
+          </.link>
 
           <%!-- More actions --%>
           <div class="w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">

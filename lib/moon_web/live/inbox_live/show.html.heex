@@ -1,0 +1,336 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} full_width>
+  <div class="flex flex-col h-[calc(100vh-4rem)]">
+    <%!-- HEADER BAR --%>
+    <div class="border-b border-base-200 bg-base-100">
+      <%!-- Top row: Subject + actions --%>
+      <div class="flex items-center gap-3 px-5 pt-4 pb-2">
+        <%!-- Back button --%>
+        <.link navigate={~p"/inbox"} class="btn btn-ghost btn-sm btn-circle shrink-0">
+          <.icon name="hero-arrow-left" class="size-4" />
+        </.link>
+
+        <%!-- Subject --%>
+        <h1 class="text-lg font-bold truncate flex-1">{@email.subject}</h1>
+
+        <%!-- Status + Timer --%>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class={[
+            "inline-flex text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap",
+            status_classes(@email.status)
+          ]}>
+            {status_label(@email.status)}
+          </span>
+          <span class="inline-flex items-center gap-1 text-xs font-mono font-medium px-2.5 py-1 rounded-full bg-error/10 text-error">
+            <.icon name="hero-clock" class="size-3" /> 213:30:13
+          </span>
+        </div>
+
+        <%!-- Action icons --%>
+        <div class="flex items-center gap-0.5 shrink-0 border-l border-base-200 pl-3 ml-1">
+          <button class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-star" class="size-4" />
+          </button>
+          <button class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-hashtag" class="size-4" />
+          </button>
+          <button class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-calendar" class="size-4" />
+          </button>
+          <button class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-photo" class="size-4" />
+          </button>
+          <button class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-ellipsis-vertical" class="size-4" />
+          </button>
+        </div>
+
+        <%!-- Navigation --%>
+        <div class="flex items-center gap-0.5 shrink-0 border-l border-base-200 pl-3 ml-1">
+          <.link
+            :if={@prev_id}
+            navigate={~p"/inbox/#{@prev_id}"}
+            class="btn btn-ghost btn-sm btn-circle"
+          >
+            <.icon name="hero-chevron-left" class="size-4" />
+          </.link>
+          <span :if={!@prev_id} class="btn btn-ghost btn-sm btn-circle btn-disabled opacity-30">
+            <.icon name="hero-chevron-left" class="size-4" />
+          </span>
+          <.link
+            :if={@next_id}
+            navigate={~p"/inbox/#{@next_id}"}
+            class="btn btn-ghost btn-sm btn-circle"
+          >
+            <.icon name="hero-chevron-right" class="size-4" />
+          </.link>
+          <span :if={!@next_id} class="btn btn-ghost btn-sm btn-circle btn-disabled opacity-30">
+            <.icon name="hero-chevron-right" class="size-4" />
+          </span>
+          <.link navigate={~p"/inbox"} class="btn btn-ghost btn-sm btn-circle">
+            <.icon name="hero-x-mark" class="size-4" />
+          </.link>
+        </div>
+      </div>
+
+      <%!-- Bottom row: Participants + Tags --%>
+      <div class="flex items-center gap-3 px-5 pb-3 pl-16">
+        <span class="text-xs text-base-content/50">
+          {@participant_count} participants
+        </span>
+        <div class="flex items-center gap-1.5">
+          <span
+            :for={tag <- @email.tags}
+            class={[
+              "inline-flex text-xs font-medium px-2 py-0.5 rounded-full",
+              tag_classes(tag)
+            ]}
+          >
+            {tag_label(tag)}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <%!-- MAIN CONTENT: Thread + Sidebar --%>
+    <div class="flex flex-1 min-h-0">
+      <%!-- EMAIL THREAD (left) --%>
+      <div class="flex-1 overflow-y-auto">
+        <div class="max-w-4xl mx-auto py-4">
+          <%= for message <- @thread do %>
+            <div class="px-5 py-4 border-b border-base-200/60" id={"message-#{message.id}"}>
+              <%!-- Message header --%>
+              <div class="flex items-start gap-3">
+                <%!-- Avatar --%>
+                <div class="w-9 h-9 rounded-full bg-base-300 flex items-center justify-center shrink-0 mt-0.5">
+                  <span class="text-xs font-bold text-base-content/70">
+                    {message.sender_initials}
+                  </span>
+                </div>
+
+                <%!-- Sender info --%>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-semibold text-sm">{message.sender_name}</span>
+                    <span class="text-xs text-base-content/40">{message.sender_email}</span>
+                    <button class="text-xs text-primary hover:underline cursor-pointer">
+                      + Add Person
+                    </button>
+                  </div>
+                  <p class="text-xs text-base-content/40 mt-0.5">{message.recipients}</p>
+                </div>
+
+                <%!-- Timestamp + actions --%>
+                <div class="flex items-center gap-1 shrink-0">
+                  <span class="text-xs text-base-content/40 mr-2">
+                    {format_datetime(message.timestamp)}
+                  </span>
+                  <button class="btn btn-ghost btn-xs btn-circle">
+                    <.icon name="hero-arrow-uturn-left" class="size-3.5" />
+                  </button>
+                  <button class="btn btn-ghost btn-xs btn-circle">
+                    <.icon name="hero-arrow-uturn-right" class="size-3.5" />
+                  </button>
+                  <button class="btn btn-ghost btn-xs btn-circle">
+                    <.icon name="hero-ellipsis-horizontal" class="size-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <%!-- Message body --%>
+              <div class="ml-12 mt-3">
+                <div class="text-sm text-base-content/80 whitespace-pre-line leading-relaxed">
+                  {message.body}
+                </div>
+
+                <%!-- Signature --%>
+                <div
+                  :if={message.signature}
+                  class="mt-4 pt-3 border-t border-base-200/50 text-sm text-base-content/60"
+                >
+                  <p class="font-medium text-base-content/70">Best Regards,</p>
+                  <p class="font-medium italic">{message.signature.name}</p>
+                  <p>
+                    Email:
+                    <a
+                      href={"mailto:#{message.signature.email}"}
+                      class="text-primary hover:underline"
+                    >
+                      {message.signature.email}
+                    </a>
+                  </p>
+                  <p>Direct: {message.signature.phone}</p>
+                </div>
+
+                <%!-- Attachments --%>
+                <div :if={message.attachments != []} class="mt-4 flex flex-wrap gap-2">
+                  <div
+                    :for={attachment <- message.attachments}
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-base-200 bg-base-200/30 hover:bg-base-200/60 transition-colors cursor-pointer"
+                  >
+                    <.icon name="hero-document-text" class="size-4 text-primary" />
+                    <div class="min-w-0">
+                      <p class="text-xs font-medium truncate text-primary">{attachment.name}</p>
+                      <p class="text-xs text-base-content/40">{attachment.size}</p>
+                    </div>
+                    <.icon name="hero-arrow-down-tray" class="size-3.5 text-base-content/40" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+
+          <%!-- Reply box --%>
+          <div class="px-5 py-4">
+            <div class="ml-12 border border-base-200 rounded-lg p-4 bg-base-200/20">
+              <div class="flex items-center gap-2 text-sm text-base-content/40 mb-3">
+                <.icon name="hero-arrow-uturn-left" class="size-4" />
+                <span>Reply to this conversation...</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="btn btn-primary btn-sm">
+                  <.icon name="hero-paper-airplane" class="size-3.5" /> Reply
+                </button>
+                <button class="btn btn-ghost btn-sm">
+                  <.icon name="hero-arrow-uturn-right" class="size-3.5" /> Forward
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%!-- LOAD INFO SIDEBAR (right) --%>
+      <aside class="w-80 shrink-0 border-l border-base-200 bg-base-200/20 overflow-y-auto">
+        <%!-- Sidebar header --%>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-base-200">
+          <div>
+            <h2 class="text-sm font-semibold flex items-center gap-1.5">
+              Conversation Summary <.icon name="hero-chevron-down" class="size-3" />
+            </h2>
+            <p class="text-xs text-base-content/40 mt-0.5">Powered by drayAI</p>
+          </div>
+          <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+            <.icon name="hero-sparkles" class="size-4 text-primary" />
+          </div>
+        </div>
+
+        <%!-- Assigned to --%>
+        <div class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-base-content/50">Assigned to</span>
+            <div class="flex items-center gap-1">
+              <div
+                :for={person <- @load_info.assigned_to}
+                class="w-7 h-7 rounded-full bg-base-300 flex items-center justify-center"
+              >
+                <span class="text-xs font-bold text-base-content/60">{person}</span>
+              </div>
+              <button class="w-7 h-7 rounded-full border border-dashed border-base-300 flex items-center justify-center hover:bg-base-200 transition-colors cursor-pointer">
+                <.icon name="hero-user" class="size-3.5 text-base-content/30" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <%!-- Connected Loads --%>
+        <div class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-semibold">
+              {length(@load_info.loads)} Connected Loads
+            </span>
+            <button class="btn btn-primary btn-xs gap-1">
+              <.icon name="hero-plus" class="size-3" /> Add
+            </button>
+          </div>
+
+          <%!-- Load cards --%>
+          <%= for load <- @load_info.loads do %>
+            <div class="mb-4 last:mb-0">
+              <%!-- Load reference + status --%>
+              <div class="flex items-start justify-between mb-2">
+                <div class="min-w-0">
+                  <p class="text-xs font-mono font-semibold text-base-content/80 truncate">
+                    {load.reference}
+                  </p>
+                  <p class="text-xs text-base-content/40">{load.container}</p>
+                </div>
+                <span class={[
+                  "inline-flex text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ml-2",
+                  load_status_classes(load.status)
+                ]}>
+                  {load.status}
+                </span>
+              </div>
+
+              <%!-- Customer --%>
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-semibold">{load.customer}</span>
+                  <.icon name="hero-link" class="size-3 text-base-content/30" />
+                </div>
+                <button class="btn btn-ghost btn-xs btn-circle">
+                  <.icon name="hero-ellipsis-vertical" class="size-3.5" />
+                </button>
+              </div>
+
+              <div class="text-xs text-base-content/50 mb-1">Assigned to Load</div>
+              <div class="flex items-center justify-between mb-3">
+                <button class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                  <.icon name="hero-plus" class="size-3 text-primary" />
+                </button>
+              </div>
+
+              <button class="text-xs text-primary font-medium hover:underline cursor-pointer mb-4">
+                Open Load
+              </button>
+
+              <%!-- Pickup Terminal --%>
+              <div class="border-t border-base-200 pt-3 mb-3">
+                <p class="text-xs font-semibold text-base-content/70 mb-1">Pickup Terminal</p>
+                <p class="text-sm font-medium">{load.pickup.name}</p>
+                <p class="text-xs text-base-content/50 leading-relaxed">{load.pickup.address}</p>
+              </div>
+
+              <%!-- Delivery Warehouse --%>
+              <div class="border-t border-base-200 pt-3 mb-3">
+                <p class="text-xs font-semibold text-base-content/70 mb-1">Delivery Warehouse</p>
+                <p class="text-sm font-medium">{load.delivery.name}</p>
+                <p class="text-xs text-base-content/50 leading-relaxed">
+                  {load.delivery.address}
+                </p>
+              </div>
+
+              <%!-- Return Terminal --%>
+              <div :if={load.return_terminal} class="border-t border-base-200 pt-3 mb-3">
+                <p class="text-xs font-semibold text-base-content/70 mb-1">Return Terminal</p>
+                <p class="text-sm font-medium">{load.return_terminal.name}</p>
+                <p class="text-xs text-base-content/50 leading-relaxed">
+                  {load.return_terminal.address}
+                </p>
+              </div>
+
+              <%!-- Load Info Summary --%>
+              <div class="border-t border-base-200 pt-3">
+                <p class="text-xs font-semibold text-base-content/70 mb-2">Load Info Summary</p>
+                <div class="space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-base-content/50">Pick Up Appt</span>
+                    <span class="text-xs font-medium">
+                      {load.pickup_appt || "—"}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-base-content/50">Delivery Appt</span>
+                    <span class="text-xs font-medium">
+                      {load.delivery_appt || "—"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layouts.app>

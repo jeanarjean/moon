@@ -150,7 +150,7 @@ defmodule MoonWeb.InboxLive.Index do
 
   # -- Dummy data --
 
-  defp generate_dummy_emails do
+  def generate_dummy_emails do
     [
       %{
         id: 1,
