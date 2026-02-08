@@ -31,6 +31,10 @@ defmodule MoonWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
+  attr :full_width, :boolean,
+    default: false,
+    doc: "when true, removes max-width constraint and reduces padding for full-width layouts"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -69,8 +73,8 @@ defmodule MoonWeb.Layouts do
       </div>
     </header>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
+    <main class={[if(@full_width, do: "", else: "px-4 py-20 sm:px-6 lg:px-8")]}>
+      <div class={[if(@full_width, do: "", else: "mx-auto max-w-2xl space-y-4")]}>
         {render_slot(@inner_block)}
       </div>
     </main>
