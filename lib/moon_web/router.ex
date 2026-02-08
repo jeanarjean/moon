@@ -55,6 +55,8 @@ defmodule MoonWeb.Router do
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
 
+      live "/inbox", InboxLive.Index, :index
+
       live "/addresses", AddressLive.Index, :index
       live "/addresses/new", AddressLive.Form, :new
       live "/addresses/:id", AddressLive.Show, :show
