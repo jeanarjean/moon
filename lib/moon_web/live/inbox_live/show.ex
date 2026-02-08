@@ -24,6 +24,9 @@ defmodule MoonWeb.InboxLive.Show do
       prev_id = if idx > 0, do: Enum.at(all_ids, idx - 1)
       next_id = if idx < length(all_ids) - 1, do: Enum.at(all_ids, idx + 1)
 
+      last_message = List.last(thread)
+      expanded = MapSet.new([last_message.id])
+
       {:ok,
        socket
        |> assign(:page_title, email.subject)
@@ -32,7 +35,8 @@ defmodule MoonWeb.InboxLive.Show do
        |> assign(:load_info, load_info)
        |> assign(:participant_count, count_participants(thread))
        |> assign(:prev_id, prev_id)
-       |> assign(:next_id, next_id)}
+       |> assign(:next_id, next_id)
+       |> assign(:expanded_messages, expanded)}
     else
       {:ok,
        socket
@@ -41,7 +45,24 @@ defmodule MoonWeb.InboxLive.Show do
     end
   end
 
+  @impl true
+  def handle_event("toggle_message", %{"id" => id}, socket) do
+    id = String.to_integer(id)
+    expanded = socket.assigns.expanded_messages
+
+    expanded =
+      if MapSet.member?(expanded, id),
+        do: MapSet.delete(expanded, id),
+        else: MapSet.put(expanded, id)
+
+    {:noreply, assign(socket, :expanded_messages, expanded)}
+  end
+
   # -- Helpers --
+
+  def expanded?(assigns, message_id) do
+    MapSet.member?(assigns.expanded_messages, message_id)
+  end
 
   def initials(name) do
     name

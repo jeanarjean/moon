@@ -171,7 +171,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 2,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 2,
         status: "waiting_on_customer",
         subject: "Delivery Order TEMU1282305",
@@ -187,7 +187,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 3,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 2,
         status: "waiting_on_customer",
         subject: "Delivery Order TGBU3752218",
@@ -203,7 +203,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 4,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 1,
         status: "open",
         subject: "RATE QUOTE NEEDED",
@@ -235,7 +235,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 6,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 1,
         status: "open",
         subject: "Delivery Order",
@@ -267,7 +267,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 8,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 3,
         status: "waiting_on_us",
         subject: "Delivery Order 5 Containers - APM - Elizabeth",
@@ -283,7 +283,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 9,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 1,
         status: "waiting_on_customer",
         subject: "DELIVER ORDER",
@@ -315,7 +315,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 11,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 1,
         status: "open",
         subject: "Quote Request",
@@ -331,7 +331,7 @@ defmodule MoonWeb.InboxLive.Index do
       %{
         id: 12,
         from: "Charlotte Dominguez",
-        from_email: "charlotte@portpro.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 1,
         status: "open",
         subject: "(No Subject)",
@@ -346,8 +346,8 @@ defmodule MoonWeb.InboxLive.Index do
       },
       %{
         id: 13,
-        from: "Charlotte@portpro.io",
-        from_email: "charlotte@portpro.io",
+        from: "Charlotte@outermoon.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 5,
         status: "waiting_on_us",
         subject: "EMPTY LIST 6/2",
@@ -362,8 +362,8 @@ defmodule MoonWeb.InboxLive.Index do
       },
       %{
         id: 14,
-        from: "Charlotte@portpro.io",
-        from_email: "charlotte@portpro.io",
+        from: "Charlotte@outermoon.io",
+        from_email: "charlotte@outermoon.io",
         thread_count: 2,
         status: "waiting_on_us",
         subject: "EMPTY NOTICE UPDATED 5/29 - CHICAGO",

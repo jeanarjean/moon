@@ -97,86 +97,141 @@
       <div class="flex-1 overflow-y-auto">
         <div class="max-w-4xl mx-auto py-4">
           <%= for message <- @thread do %>
-            <div class="px-5 py-4 border-b border-base-200/60" id={"message-#{message.id}"}>
-              <%!-- Message header --%>
-              <div class="flex items-start gap-3">
+            <%= if expanded?(assigns, message.id) do %>
+              <%!-- EXPANDED MESSAGE --%>
+              <div class="px-5 py-4 border-b border-base-200/60" id={"message-#{message.id}"}>
+                <%!-- Message header --%>
+                <div class="flex items-start gap-3">
+                  <%!-- Avatar --%>
+                  <div class="w-9 h-9 rounded-full bg-base-300 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-xs font-bold text-base-content/70">
+                      {message.sender_initials}
+                    </span>
+                  </div>
+
+                  <%!-- Sender info --%>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="font-semibold text-sm">{message.sender_name}</span>
+                      <span class="text-xs text-base-content/40">{message.sender_email}</span>
+                      <button class="text-xs text-primary hover:underline cursor-pointer">
+                        + Add Person
+                      </button>
+                    </div>
+                    <p class="text-xs text-base-content/40 mt-0.5">{message.recipients}</p>
+                  </div>
+
+                  <%!-- Timestamp + actions --%>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <span class="text-xs text-base-content/40 mr-2">
+                      {format_datetime(message.timestamp)}
+                    </span>
+                    <button class="btn btn-ghost btn-xs btn-circle">
+                      <.icon name="hero-arrow-uturn-left" class="size-3.5" />
+                    </button>
+                    <button class="btn btn-ghost btn-xs btn-circle">
+                      <.icon name="hero-arrow-uturn-right" class="size-3.5" />
+                    </button>
+                    <button
+                      phx-click="toggle_message"
+                      phx-value-id={message.id}
+                      class="btn btn-ghost btn-xs btn-circle"
+                    >
+                      <.icon name="hero-chevron-up" class="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                <%!-- Message body --%>
+                <div class="ml-12 mt-3">
+                  <div class="text-sm text-base-content/80 whitespace-pre-line leading-relaxed">
+                    {message.body}
+                  </div>
+
+                  <%!-- Signature --%>
+                  <div
+                    :if={message.signature}
+                    class="mt-4 pt-3 border-t border-base-200/50 text-sm text-base-content/60"
+                  >
+                    <p class="font-medium text-base-content/70">Best Regards,</p>
+                    <p class="font-medium italic">{message.signature.name}</p>
+                    <p>
+                      Email:
+                      <a
+                        href={"mailto:#{message.signature.email}"}
+                        class="text-primary hover:underline"
+                      >
+                        {message.signature.email}
+                      </a>
+                    </p>
+                    <p>Direct: {message.signature.phone}</p>
+                  </div>
+
+                  <%!-- Attachments --%>
+                  <div :if={message.attachments != []} class="mt-4 flex flex-wrap gap-2">
+                    <div
+                      :for={attachment <- message.attachments}
+                      class="flex items-center gap-2 px-3 py-2 rounded-lg border border-base-200 bg-base-200/30 hover:bg-base-200/60 transition-colors cursor-pointer"
+                    >
+                      <.icon name="hero-document-text" class="size-4 text-primary" />
+                      <div class="min-w-0">
+                        <p class="text-xs font-medium truncate text-primary">
+                          {attachment.name}
+                        </p>
+                        <p class="text-xs text-base-content/40">{attachment.size}</p>
+                      </div>
+                      <.icon
+                        name="hero-arrow-down-tray"
+                        class="size-3.5 text-base-content/40"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% else %>
+              <%!-- COLLAPSED MESSAGE --%>
+              <div
+                id={"message-#{message.id}"}
+                phx-click="toggle_message"
+                phx-value-id={message.id}
+                class="flex items-center gap-3 px-5 py-3 border-b border-base-200/60 hover:bg-base-200/30 cursor-pointer transition-colors duration-100 group"
+              >
                 <%!-- Avatar --%>
-                <div class="w-9 h-9 rounded-full bg-base-300 flex items-center justify-center shrink-0 mt-0.5">
+                <div class="w-9 h-9 rounded-full bg-base-300 flex items-center justify-center shrink-0">
                   <span class="text-xs font-bold text-base-content/70">
                     {message.sender_initials}
                   </span>
                 </div>
 
-                <%!-- Sender info --%>
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-semibold text-sm">{message.sender_name}</span>
-                    <span class="text-xs text-base-content/40">{message.sender_email}</span>
-                    <button class="text-xs text-primary hover:underline cursor-pointer">
-                      + Add Person
-                    </button>
-                  </div>
-                  <p class="text-xs text-base-content/40 mt-0.5">{message.recipients}</p>
-                </div>
+                <%!-- Sender name --%>
+                <span class="font-semibold text-sm shrink-0 w-36 truncate">
+                  {message.sender_name}
+                </span>
 
-                <%!-- Timestamp + actions --%>
-                <div class="flex items-center gap-1 shrink-0">
-                  <span class="text-xs text-base-content/40 mr-2">
-                    {format_datetime(message.timestamp)}
-                  </span>
-                  <button class="btn btn-ghost btn-xs btn-circle">
-                    <.icon name="hero-arrow-uturn-left" class="size-3.5" />
-                  </button>
-                  <button class="btn btn-ghost btn-xs btn-circle">
-                    <.icon name="hero-arrow-uturn-right" class="size-3.5" />
-                  </button>
-                  <button class="btn btn-ghost btn-xs btn-circle">
-                    <.icon name="hero-ellipsis-horizontal" class="size-3.5" />
-                  </button>
-                </div>
+                <%!-- Body preview --%>
+                <p class="text-sm text-base-content/50 truncate flex-1 min-w-0">
+                  {String.slice(String.trim(message.body), 0, 120)}...
+                </p>
+
+                <%!-- Attachment indicator --%>
+                <.icon
+                  :if={message.attachments != []}
+                  name="hero-paper-clip"
+                  class="size-3.5 text-base-content/30 shrink-0"
+                />
+
+                <%!-- Timestamp --%>
+                <span class="text-xs text-base-content/40 shrink-0">
+                  {format_datetime(message.timestamp)}
+                </span>
+
+                <%!-- Expand hint --%>
+                <.icon
+                  name="hero-chevron-down"
+                  class="size-3.5 text-base-content/30 group-hover:text-base-content/60 shrink-0 transition-colors"
+                />
               </div>
-
-              <%!-- Message body --%>
-              <div class="ml-12 mt-3">
-                <div class="text-sm text-base-content/80 whitespace-pre-line leading-relaxed">
-                  {message.body}
-                </div>
-
-                <%!-- Signature --%>
-                <div
-                  :if={message.signature}
-                  class="mt-4 pt-3 border-t border-base-200/50 text-sm text-base-content/60"
-                >
-                  <p class="font-medium text-base-content/70">Best Regards,</p>
-                  <p class="font-medium italic">{message.signature.name}</p>
-                  <p>
-                    Email:
-                    <a
-                      href={"mailto:#{message.signature.email}"}
-                      class="text-primary hover:underline"
-                    >
-                      {message.signature.email}
-                    </a>
-                  </p>
-                  <p>Direct: {message.signature.phone}</p>
-                </div>
-
-                <%!-- Attachments --%>
-                <div :if={message.attachments != []} class="mt-4 flex flex-wrap gap-2">
-                  <div
-                    :for={attachment <- message.attachments}
-                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-base-200 bg-base-200/30 hover:bg-base-200/60 transition-colors cursor-pointer"
-                  >
-                    <.icon name="hero-document-text" class="size-4 text-primary" />
-                    <div class="min-w-0">
-                      <p class="text-xs font-medium truncate text-primary">{attachment.name}</p>
-                      <p class="text-xs text-base-content/40">{attachment.size}</p>
-                    </div>
-                    <.icon name="hero-arrow-down-tray" class="size-3.5 text-base-content/40" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <% end %>
           <% end %>
 
           <%!-- Reply box --%>
@@ -207,7 +262,7 @@
             <h2 class="text-sm font-semibold flex items-center gap-1.5">
               Conversation Summary <.icon name="hero-chevron-down" class="size-3" />
             </h2>
-            <p class="text-xs text-base-content/40 mt-0.5">Powered by drayAI</p>
+            <p class="text-xs text-base-content/40 mt-0.5">Powered by outerAI</p>
           </div>
           <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
             <.icon name="hero-sparkles" class="size-4 text-primary" />
