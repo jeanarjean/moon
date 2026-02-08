@@ -335,9 +335,12 @@
                 </button>
               </div>
 
-              <button class="text-xs text-primary font-medium hover:underline cursor-pointer mb-4">
+              <.link
+                navigate={~p"/loads/#{load.reference}"}
+                class="text-xs text-primary font-medium hover:underline cursor-pointer mb-4 inline-block"
+              >
                 Open Load
-              </button>
+              </.link>
 
               <%!-- Pickup Terminal --%>
               <div class="border-t border-base-200 pt-3 mb-3">

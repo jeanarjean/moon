@@ -58,6 +58,8 @@ defmodule MoonWeb.Router do
       live "/inbox", InboxLive.Index, :index
       live "/inbox/:id", InboxLive.Show, :show
 
+      live "/loads/:reference", LoadLive.Show, :show
+
       live "/addresses", AddressLive.Index, :index
       live "/addresses/new", AddressLive.Form, :new
       live "/addresses/:id", AddressLive.Show, :show

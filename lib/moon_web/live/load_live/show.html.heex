@@ -1,0 +1,397 @@
+<Layouts.app flash={@flash} current_scope={@current_scope} full_width>
+  <div class="flex flex-col h-[calc(100vh-4rem)] bg-base-200/30">
+    <%!-- HEADER BAR --%>
+    <div class="flex items-center gap-3 px-5 py-3 bg-base-100 border-b border-base-200">
+      <h1 class="text-base font-bold flex-1 flex items-center gap-3">
+        <span>Load #: <span class="font-mono">{@load.reference}</span></span>
+        <span class={[
+          "inline-flex text-xs font-medium px-2.5 py-1 rounded-full",
+          load_status_classes(@load.status)
+        ]}>
+          {@load.status}
+        </span>
+      </h1>
+
+      <div class="flex items-center gap-1 shrink-0">
+        <button class="btn btn-ghost btn-sm btn-circle">
+          <.icon name="hero-star" class="size-4" />
+        </button>
+        <button class="btn btn-ghost btn-sm btn-circle">
+          <.icon name="hero-cog-6-tooth" class="size-4" />
+        </button>
+      </div>
+
+      <.link
+        navigate={~p"/inbox"}
+        class="btn btn-ghost btn-sm gap-1.5 border-l border-base-200 pl-3 ml-1"
+      >
+        <.icon name="hero-x-mark" class="size-4" /> Close
+      </.link>
+    </div>
+
+    <%!-- MAIN LAYOUT: Sidebar + Content --%>
+    <div class="flex flex-1 min-h-0">
+      <%!-- LEFT SIDEBAR — Load details --%>
+      <aside class="w-72 shrink-0 bg-base-100 border-r border-base-200 overflow-y-auto">
+        <%!-- Customer --%>
+        <div class="px-4 py-3 border-b border-base-200">
+          <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-1.5">
+            Customer
+          </p>
+          <p class="text-sm font-bold">{@load.customer.name}</p>
+          <p class="text-xs text-base-content/50 leading-relaxed">{@load.customer.address}</p>
+        </div>
+
+        <%!-- Pick Up Location --%>
+        <div class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+              Pick Up Location
+            </p>
+            <button class="btn btn-ghost btn-xs btn-circle">
+              <.icon name="hero-map-pin" class="size-3.5 text-base-content/40" />
+            </button>
+          </div>
+          <p class="text-sm font-bold">{@load.pickup.name}</p>
+          <p class="text-xs text-base-content/50 leading-relaxed">{@load.pickup.address}</p>
+        </div>
+
+        <%!-- Delivery Location --%>
+        <div class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+              Delivery Location
+            </p>
+            <button class="btn btn-ghost btn-xs btn-circle">
+              <.icon name="hero-map-pin" class="size-3.5 text-base-content/40" />
+            </button>
+          </div>
+          <p class="text-sm font-bold">{@load.delivery.name}</p>
+          <p class="text-xs text-base-content/50 leading-relaxed">{@load.delivery.address}</p>
+        </div>
+
+        <%!-- Return Location --%>
+        <div :if={@load.return_terminal} class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+              Return Location
+            </p>
+            <button class="btn btn-ghost btn-xs btn-circle">
+              <.icon name="hero-map-pin" class="size-3.5 text-base-content/40" />
+            </button>
+          </div>
+          <p class="text-sm font-bold">{@load.return_terminal.name}</p>
+          <p class="text-xs text-base-content/50 leading-relaxed">
+            {@load.return_terminal.address}
+          </p>
+        </div>
+
+        <%!-- Load Info Summary --%>
+        <div class="px-4 py-3">
+          <p class="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-3">
+            Load Info Summary
+          </p>
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Customer Reps</span>
+              <div class="flex items-center gap-1">
+                <span
+                  :for={rep <- @load.customer_reps}
+                  class="w-6 h-6 rounded-full bg-base-300 flex items-center justify-center text-xs font-bold text-base-content/60"
+                >
+                  {rep}
+                </span>
+                <button class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer">
+                  <.icon name="hero-plus" class="size-3 text-primary" />
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Created By</span>
+              <span class="text-xs font-semibold">{@load.created_by}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Created Date</span>
+              <span class="text-xs font-semibold">{@load.created_date}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Container #</span>
+              <span class="text-xs font-mono font-semibold">{@load.container}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">BOL #</span>
+              <span class="text-xs font-mono font-semibold">{@load.bol || "—"}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Chassis #</span>
+              <span class="text-xs font-mono font-semibold">{@load.chassis || "—"}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">SSL</span>
+              <span class="text-xs font-semibold">{@load.ssl}</span>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-base-content/50">Size</span>
+              <span class="text-xs font-semibold">{@load.size}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <%!-- MAIN CONTENT --%>
+      <div class="flex-1 flex flex-col min-w-0">
+        <%!-- Tab bar --%>
+        <div class="bg-base-100 border-b border-base-200 px-2 pt-1">
+          <div class="flex items-center gap-0.5 overflow-x-auto">
+            <button
+              :for={tab <- @tabs}
+              phx-click="change_tab"
+              phx-value-tab={tab.key}
+              class={[
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-t-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border-b-2",
+                if(@active_tab == tab.key,
+                  do: "border-primary text-primary bg-primary/5",
+                  else: "border-transparent text-base-content/50 hover:text-base-content/80 hover:bg-base-200/50"
+                )
+              ]}
+            >
+              <.icon name={tab.icon} class="size-4" />
+              {tab.label}
+            </button>
+          </div>
+        </div>
+
+        <%!-- Tab content --%>
+        <div class="flex-1 flex flex-col min-h-0 bg-base-100 m-3 rounded-lg border border-base-200 overflow-hidden">
+          <%= if @active_tab == "communication" do %>
+            <%!-- Communication tab --%>
+            <div class="flex flex-col flex-1 min-h-0">
+              <%!-- Sub-tabs: Email / Messaging --%>
+              <div class="flex items-center gap-0.5 px-4 pt-2 border-b border-base-200">
+                <button
+                  phx-click="change_comm_tab"
+                  phx-value-tab="email"
+                  class={[
+                    "px-3 py-1.5 text-sm font-medium rounded-t-md border-b-2 cursor-pointer transition-colors",
+                    if(@comm_sub_tab == "email",
+                      do: "border-primary text-primary",
+                      else: "border-transparent text-base-content/50 hover:text-base-content/80"
+                    )
+                  ]}
+                >
+                  Email
+                </button>
+                <button
+                  phx-click="change_comm_tab"
+                  phx-value-tab="messaging"
+                  class={[
+                    "px-3 py-1.5 text-sm font-medium rounded-t-md border-b-2 cursor-pointer transition-colors",
+                    if(@comm_sub_tab == "messaging",
+                      do: "border-primary text-primary",
+                      else: "border-transparent text-base-content/50 hover:text-base-content/80"
+                    )
+                  ]}
+                >
+                  Messaging
+                </button>
+              </div>
+
+              <%= if @comm_sub_tab == "email" do %>
+                <%!-- Mini inbox filter bar --%>
+                <div class="flex items-center gap-3 px-4 py-2 border-b border-base-200">
+                  <div class="relative flex-1 max-w-xs">
+                    <.icon
+                      name="hero-magnifying-glass"
+                      class="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40"
+                    />
+                    <input
+                      type="search"
+                      id="load-email-search"
+                      placeholder="Search..."
+                      class="w-full input input-sm input-bordered pl-9"
+                    />
+                  </div>
+                  <select class="select select-sm select-bordered" id="load-email-tags">
+                    <option>Tags</option>
+                  </select>
+                  <select class="select select-sm select-bordered" id="load-email-status">
+                    <option>Status</option>
+                  </select>
+                  <select class="select select-sm select-bordered" id="load-email-sla">
+                    <option>SLA Status</option>
+                  </select>
+                  <div class="flex-1" />
+                  <button class="btn btn-ghost btn-sm gap-1.5 text-base-content/70">
+                    <.icon name="hero-funnel" class="size-4" /> Filter
+                  </button>
+                  <%!-- View toggles --%>
+                  <div class="flex items-center gap-0.5 border-l border-base-200 pl-2">
+                    <button class="btn btn-ghost btn-xs btn-square">
+                      <.icon name="hero-list-bullet" class="size-4" />
+                    </button>
+                    <button class="btn btn-ghost btn-xs btn-square">
+                      <.icon name="hero-squares-2x2" class="size-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <%!-- Column headers --%>
+                <div class="flex items-center gap-3 px-4 py-1.5 border-b border-base-200 bg-base-200/20 text-xs font-semibold text-base-content/50 uppercase tracking-wider">
+                  <div class="w-7 shrink-0">
+                    <input type="checkbox" class="checkbox checkbox-xs" />
+                  </div>
+                  <div class="w-6 shrink-0"></div>
+                  <div class="w-44 shrink-0">From</div>
+                  <div class="w-32 shrink-0">Status</div>
+                  <div class="flex-1 min-w-0">Subject + Body</div>
+                  <div class="w-14 shrink-0 text-right">Date</div>
+                  <div class="w-8 shrink-0"></div>
+                </div>
+
+                <%!-- Email rows --%>
+                <div id="load-emails" phx-update="stream" class="flex-1 overflow-y-auto">
+                  <%!-- Empty state --%>
+                  <div class="hidden only:flex items-center justify-center p-12 text-base-content/50">
+                    <div class="text-center">
+                      <.icon
+                        name="hero-envelope"
+                        class="size-12 mx-auto mb-3 text-base-content/20"
+                      />
+                      <p class="text-sm font-medium">No emails linked to this load</p>
+                    </div>
+                  </div>
+
+                  <div
+                    :for={{id, email} <- @streams.load_emails}
+                    id={id}
+                    class="flex items-center gap-3 px-4 py-2.5 border-b border-base-200/60 hover:bg-base-200/30 transition-colors group"
+                  >
+                    <%!-- Checkbox --%>
+                    <div class="w-7 shrink-0">
+                      <input type="checkbox" class="checkbox checkbox-sm" />
+                    </div>
+
+                    <%!-- Star --%>
+                    <div class="w-6 shrink-0">
+                      <.icon
+                        name={if(email.starred, do: "hero-star-solid", else: "hero-star")}
+                        class={[
+                          "size-4",
+                          if(email.starred,
+                            do: "text-amber-400",
+                            else: "text-base-content/25"
+                          )
+                        ]}
+                      />
+                    </div>
+
+                    <%!-- Clickable content --%>
+                    <.link
+                      navigate={~p"/inbox/#{email.id}"}
+                      class="flex-1 flex items-center gap-3 min-w-0 cursor-pointer"
+                    >
+                      <%!-- From --%>
+                      <div class="w-44 shrink-0 flex items-center gap-1.5 min-w-0">
+                        <span class={["truncate text-sm", if(!email.read, do: "font-semibold")]}>
+                          {email.from}
+                        </span>
+                        <span
+                          :if={email.thread_count > 1}
+                          class="badge badge-xs bg-base-300 text-base-content/70 font-medium"
+                        >
+                          {email.thread_count}
+                        </span>
+                      </div>
+
+                      <%!-- Status --%>
+                      <div class="w-32 shrink-0">
+                        <span class={[
+                          "inline-flex text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
+                          status_classes(email.status)
+                        ]}>
+                          {status_label(email.status)}
+                        </span>
+                      </div>
+
+                      <%!-- Subject + Body --%>
+                      <div class="flex-1 min-w-0 flex items-center gap-1.5">
+                        <span :if={email.priority == :high} class="text-error shrink-0">
+                          <.icon name="hero-exclamation-circle-solid" class="size-4" />
+                        </span>
+                        <p class="truncate text-sm">
+                          <span class={[if(!email.read, do: "font-semibold")]}>
+                            {email.subject}
+                          </span>
+                          <span class="text-base-content/40 mx-1">&bull;</span>
+                          <span class="text-base-content/50">{email.body_preview}</span>
+                        </p>
+                      </div>
+
+                      <%!-- Tags --%>
+                      <div class="shrink-0 hidden xl:flex items-center gap-1">
+                        <span
+                          :for={tag <- email.tags}
+                          class={[
+                            "inline-flex text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap",
+                            tag_classes(tag)
+                          ]}
+                        >
+                          {tag_label(tag)}
+                        </span>
+                      </div>
+
+                      <%!-- Date --%>
+                      <div class="w-14 shrink-0 text-right text-sm text-base-content/50">
+                        {format_date(email.date)}
+                      </div>
+                    </.link>
+
+                    <%!-- Actions --%>
+                    <div class="w-8 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button class="btn btn-ghost btn-xs btn-circle">
+                        <.icon name="hero-ellipsis-vertical" class="size-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              <% else %>
+                <%!-- Messaging sub-tab placeholder --%>
+                <div class="flex-1 flex items-center justify-center text-base-content/40">
+                  <div class="text-center">
+                    <.icon
+                      name="hero-chat-bubble-left-right"
+                      class="size-12 mx-auto mb-3 text-base-content/20"
+                    />
+                    <p class="text-sm font-medium">No messages yet</p>
+                    <p class="text-xs mt-1">Internal messaging for this load</p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% else %>
+            <%!-- Other tab placeholder --%>
+            <div class="flex-1 flex items-center justify-center text-base-content/40">
+              <div class="text-center">
+                <.icon
+                  name={Enum.find(@tabs, &(&1.key == @active_tab)).icon}
+                  class="size-12 mx-auto mb-3 text-base-content/20"
+                />
+                <p class="text-sm font-medium">
+                  {Enum.find(@tabs, &(&1.key == @active_tab)).label}
+                </p>
+                <p class="text-xs mt-1">Coming soon</p>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layouts.app>
