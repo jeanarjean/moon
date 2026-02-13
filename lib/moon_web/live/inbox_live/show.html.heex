@@ -91,9 +91,84 @@
       </div>
     </div>
 
-    <%!-- MAIN CONTENT: Thread + Sidebar --%>
     <div class="flex flex-1 min-h-0">
-      <%!-- EMAIL THREAD (left) --%>
+      <aside class="w-56 shrink-0 border-r border-base-200 bg-base-200/20 overflow-y-auto">
+        <div class="px-4 py-3 border-b border-base-200">
+          <div class="flex items-center gap-2">
+            <div class="w-5 h-5 rounded bg-primary/10 flex items-center justify-center">
+              <.icon name="hero-bolt" class="size-3 text-primary" />
+            </div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-base-content/60">
+              Automation
+            </h3>
+          </div>
+        </div>
+
+        <div class="px-4 py-3">
+          <div class="relative">
+            <%= for {step, idx} <- Enum.with_index(@automation_steps) do %>
+              <div class="flex gap-3 relative" id={"step-#{idx}"}>
+                <%!-- Timeline connector --%>
+                <div class="flex flex-col items-center">
+                  <.icon
+                    name={step_status_icon(step.status)}
+                    class={[
+                      "size-4 shrink-0 relative z-10",
+                      step_status_color(step.status),
+                      if(step.status == :in_progress, do: "motion-safe:animate-spin")
+                    ]}
+                  />
+                  <div
+                    :if={idx < length(@automation_steps) - 1}
+                    class={[
+                      "w-px flex-1 min-h-4 my-1",
+                      if(step.status == :completed,
+                        do: "bg-emerald-300 dark:bg-emerald-700",
+                        else: "bg-base-300"
+                      )
+                    ]}
+                  />
+                </div>
+
+                <%!-- Step content --%>
+                <div class={[
+                  "pb-4 -mt-0.5 min-w-0",
+                  if(idx == length(@automation_steps) - 1, do: "pb-0")
+                ]}>
+                  <p class={[
+                    "text-xs font-mono font-semibold leading-tight",
+                    if(step.status == :pending,
+                      do: "text-base-content/30",
+                      else: "text-base-content/80"
+                    )
+                  ]}>
+                    {step.action}
+                  </p>
+                  <p class={[
+                    "text-xs mt-0.5 leading-tight",
+                    if(step.status == :pending,
+                      do: "text-base-content/20",
+                      else: "text-base-content/45"
+                    )
+                  ]}>
+                    {step.detail}
+                  </p>
+                  <p class={[
+                    "text-xs mt-0.5",
+                    if(step.status == :pending,
+                      do: "text-base-content/20",
+                      else: "text-base-content/30"
+                    )
+                  ]}>
+                    {step.time}
+                  </p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </aside>
+
       <div class="flex-1 overflow-y-auto">
         <div class="max-w-4xl mx-auto py-4">
           <%= for message <- @thread do %>

@@ -36,7 +36,8 @@ defmodule MoonWeb.InboxLive.Show do
        |> assign(:participant_count, count_participants(thread))
        |> assign(:prev_id, prev_id)
        |> assign(:next_id, next_id)
-       |> assign(:expanded_messages, expanded)}
+       |> assign(:expanded_messages, expanded)
+       |> assign(:automation_steps, generate_automation_steps(email))}
     else
       {:ok,
        socket
@@ -94,6 +95,149 @@ defmodule MoonWeb.InboxLive.Show do
     |> Enum.flat_map(fn msg -> [msg.sender_email | msg.recipient_emails] end)
     |> Enum.uniq()
     |> length()
+  end
+
+  def step_status_icon(:completed), do: "hero-check-circle-solid"
+  def step_status_icon(:in_progress), do: "hero-arrow-path"
+  def step_status_icon(:pending), do: "hero-clock"
+  def step_status_icon(_), do: "hero-clock"
+
+  def step_status_color(:completed),
+    do: "text-emerald-500 dark:text-emerald-400"
+
+  def step_status_color(:in_progress),
+    do: "text-primary"
+
+  def step_status_color(:pending),
+    do: "text-base-content/25"
+
+  def step_status_color(_), do: "text-base-content/25"
+
+  defp generate_automation_steps(email) do
+    base_steps = [
+      %{
+        action: "email_received",
+        detail: "From #{email.from}",
+        time: "2 min ago",
+        status: :completed
+      },
+      %{
+        action: "email_classified",
+        detail: classify_label(email),
+        time: "2 min ago",
+        status: :completed
+      },
+      %{
+        action: "load_created",
+        detail: "In TMS",
+        time: "1 min ago",
+        status: :completed
+      }
+    ]
+
+    extra_steps =
+      cond do
+        "tender" in email.tags ->
+          [
+            %{
+              action: "quote_sent",
+              detail: "To shipper",
+              time: "45 sec ago",
+              status: :completed
+            },
+            %{
+              action: "load_posted",
+              detail: "On load board",
+              time: "30 sec ago",
+              status: :completed
+            },
+            %{
+              action: "carrier_match",
+              detail: "3 carriers found",
+              time: "15 sec ago",
+              status: :completed
+            },
+            %{
+              action: "rate_confirmation",
+              detail: "Awaiting carrier",
+              time: "Pending",
+              status: :in_progress
+            },
+            %{
+              action: "dispatch",
+              detail: "Schedule pickup",
+              time: "Pending",
+              status: :pending
+            }
+          ]
+
+        "quote" in email.tags ->
+          [
+            %{
+              action: "rate_lookup",
+              detail: "Market rates pulled",
+              time: "1 min ago",
+              status: :completed
+            },
+            %{
+              action: "quote_sent",
+              detail: "To shipper",
+              time: "30 sec ago",
+              status: :completed
+            },
+            %{
+              action: "quote_accepted",
+              detail: "Awaiting response",
+              time: "Pending",
+              status: :in_progress
+            }
+          ]
+
+        "empty_return" in email.tags ->
+          [
+            %{
+              action: "return_scheduled",
+              detail: "Terminal notified",
+              time: "1 min ago",
+              status: :completed
+            },
+            %{
+              action: "driver_assigned",
+              detail: "Awaiting dispatch",
+              time: "Pending",
+              status: :in_progress
+            }
+          ]
+
+        true ->
+          [
+            %{
+              action: "quote_sent",
+              detail: "To shipper",
+              time: "45 sec ago",
+              status: :completed
+            },
+            %{
+              action: "awaiting_response",
+              detail: "From customer",
+              time: "Pending",
+              status: :in_progress
+            }
+          ]
+      end
+
+    base_steps ++ extra_steps
+  end
+
+  defp classify_label(email) do
+    cond do
+      "tender" in email.tags -> "Tagged as Tender"
+      "quote" in email.tags -> "Tagged as Quote"
+      "load" in email.tags -> "Tagged as Load"
+      "empty_return" in email.tags -> "Tagged as Empty Return"
+      "rate" in email.tags -> "Tagged as Rate"
+      true -> "Auto-classified"
+    end
   end
 
   # -- Thread data generation --

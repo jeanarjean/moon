@@ -158,7 +158,8 @@
                 "flex flex-col items-center gap-1 px-3 py-2 rounded-t-lg text-xs font-medium transition-colors cursor-pointer whitespace-nowrap border-b-2",
                 if(@active_tab == tab.key,
                   do: "border-primary text-primary bg-primary/5",
-                  else: "border-transparent text-base-content/50 hover:text-base-content/80 hover:bg-base-200/50"
+                  else:
+                    "border-transparent text-base-content/50 hover:text-base-content/80 hover:bg-base-200/50"
                 )
               ]}
             >
