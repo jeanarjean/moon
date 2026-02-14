@@ -7,6 +7,7 @@ defmodule Moon.Accounts do
   alias Moon.Repo
 
   alias Moon.Accounts.{User, UserToken, UserNotifier}
+  alias Moon.Tenants.Tenant
 
   ## Database getters
 
@@ -41,7 +42,7 @@ defmodule Moon.Accounts do
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
     user = Repo.get_by(User, email: email)
-    if User.valid_password?(user, password), do: user
+    if User.valid_password?(user, password), do: Repo.preload(user, :tenant)
   end
 
   @doc """
@@ -75,9 +76,25 @@ defmodule Moon.Accounts do
 
   """
   def register_user(attrs) do
-    %User{}
-    |> User.email_changeset(attrs)
-    |> Repo.insert()
+    user_changeset = User.email_changeset(%User{}, attrs)
+
+    if user_changeset.valid? do
+      tenant_name = Ecto.Changeset.get_field(user_changeset, :email)
+
+      Ecto.Multi.new()
+      |> Ecto.Multi.insert(:tenant, Tenant.changeset(%Tenant{}, %{name: tenant_name}))
+      |> Ecto.Multi.insert(:user, fn %{tenant: tenant} ->
+        Ecto.Changeset.put_assoc(user_changeset, :tenant, tenant)
+      end)
+      |> Repo.transaction()
+      |> case do
+        {:ok, %{user: user}} -> {:ok, user}
+        {:error, :user, changeset, _} -> {:error, changeset}
+        {:error, :tenant, changeset, _} -> {:error, changeset}
+      end
+    else
+      {:error, %{user_changeset | action: :insert}}
+    end
   end
 
   ## Settings
@@ -185,7 +202,10 @@ defmodule Moon.Accounts do
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
-    Repo.one(query)
+
+    with {user, token_inserted_at} <- Repo.one(query) do
+      {Repo.preload(user, :tenant), token_inserted_at}
+    end
   end
 
   @doc """
@@ -194,7 +214,7 @@ defmodule Moon.Accounts do
   def get_user_by_magic_link_token(token) do
     with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
          {user, _token} <- Repo.one(query) do
-      user
+      Repo.preload(user, :tenant)
     else
       _ -> nil
     end
@@ -235,11 +255,11 @@ defmodule Moon.Accounts do
       {%User{confirmed_at: nil} = user, _token} ->
         user
         |> User.confirm_changeset()
-        |> update_user_and_delete_all_tokens()
+        |> update_user_and_delete_all_tokens(preload: [:tenant])
 
       {user, token} ->
         Repo.delete!(token)
-        {:ok, {user, []}}
+        {:ok, {Repo.preload(user, :tenant), []}}
 
       nil ->
         {:error, :not_found}
@@ -283,12 +303,18 @@ defmodule Moon.Accounts do
 
   ## Token helper
 
-  defp update_user_and_delete_all_tokens(changeset) do
+  defp update_user_and_delete_all_tokens(changeset, opts \\ []) do
     Repo.transact(fn ->
       with {:ok, user} <- Repo.update(changeset) do
         tokens_to_expire = Repo.all_by(UserToken, user_id: user.id)
 
         Repo.delete_all(from(t in UserToken, where: t.id in ^Enum.map(tokens_to_expire, & &1.id)))
+
+        user =
+          case Keyword.get(opts, :preload) do
+            nil -> user
+            preloads -> Repo.preload(user, preloads)
+          end
 
         {:ok, {user, tokens_to_expire}}
       end
