@@ -11,6 +11,8 @@ defmodule Moon.Accounts.User do
     field :confirmed_at, :utc_datetime
     field :authenticated_at, :utc_datetime, virtual: true
 
+    belongs_to :tenant, Moon.Tenants.Tenant
+
     timestamps(type: :utc_datetime)
   end
 

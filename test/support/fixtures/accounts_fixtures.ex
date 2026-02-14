@@ -8,6 +8,7 @@ defmodule Moon.AccountsFixtures do
 
   alias Moon.Accounts
   alias Moon.Accounts.Scope
+  alias Moon.Repo
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
@@ -54,7 +55,7 @@ defmodule Moon.AccountsFixtures do
     {:ok, {user, _expired_tokens}} =
       Accounts.update_user_password(user, %{password: valid_user_password()})
 
-    user
+    Repo.preload(user, :tenant)
   end
 
   def extract_user_token(fun) do
